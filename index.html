@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multicast Sender</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            height: 100vh;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            height: 150px;
+            margin-top: 10px;
+            padding: 20px;
+        }
+        input {
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 15px;
+            width: 100%;
+            border: 2px solid rgb(200, 200, 200);
+            outline: 3px solid transparent;
+            text-align: center;
+            transition: all .5s;
+        }
+        input:focus, button:focus{
+            border: 2px solid rgb(84, 171, 247);
+            outline: 3px solid rgb(133, 186, 255);
+        }
+        .HorizontalLayout {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            gap: 30px;
+            box-sizing: border-box;
+        }
+        .inputGroup {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+        h1,h2{ 
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: rgb(0, 110, 255);
+            padding: 8px 10px;
+            border-radius: 5px;
+            color: white;
+            border: 2px solid transparent;
+            outline: 3px solid transparent;
+        }
+        .btnRed {
+            background-color: rgb(255, 68, 68);
+            padding: 8px 10px;
+            border-radius: 5px;
+            color: white;
+            border: 2px solid transparent;
+            outline: 3px solid transparent;
+        }
+        .btnRed:focus{
+            border: 2px solid rgb(247, 84, 84);
+            outline: 3px solid rgb(255, 133, 133);
+        }
+        textarea {
+            resize: none;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            border-radius: 20px;
+            border: none;
+            background-color: #f2f7ff;
+        }
+        textarea:focus {
+            border-radius: 20px;
+            text-align: center;
+            outline: none;
+            background-color: #f2f7ff;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Multicast Sender</h1>
+    <div class="inputGroup">
+
+        <label for="operation">URL api sender</label>
+        <input type="text" id="url" autocomplete="off" spellcheck="false" placeholder="http://">
+    </div>
+    <div class="HorizontalLayout">
+
+        <div class="inputGroup">
+
+            <label for="operation">Operación aritmética:</label>
+            <input type="text" id="operation" autocomplete="off" spellcheck="false" placeholder="Ingrese una operación aritmética">
+        </div>
+        <div class="inputGroup">
+
+            <label for="multicast-groups">Grupos Multicast (separados por comas):</label>
+            <input type="text" id="multicast-groups" autocomplete="off" spellcheck="false" placeholder="e.g. 224.1.1.1,224.1.1.2">
+        </div>
+        <div class="inputGroup">
+
+            <label for="ports">Puertos (separados por comas):</label>
+            <input type="text" id="ports" autocomplete="off" spellcheck="false" placeholder="e.g. 5000,5004">
+        </div>
+    </div>
+
+    <div class="HorizontalLayout">
+        <button onclick="sendOperation()">Enviar</button>
+        <button class="btnRed" onclick="clearResults()">Clear</button>
+    </div>
+
+<h2>Resultados</h2>
+<textarea id="results" readonly></textarea>
+
+<script>
+    async function sendOperation() {
+        const operation = document.getElementById('operation').value;
+        const url = document.getElementById('url').value;
+        const multicastGroups = document.getElementById('multicast-groups').value.split(',').map(group => group.trim());
+        const ports = document.getElementById('ports').value.split(',').map(port => port.trim());
+        const resultsArea = document.getElementById('results');
+        resultsArea.value += `Operación: ${operation}\n`;
+
+        try {
+            //http://localhost:3000/send
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ operation, multicast_groups: multicastGroups, ports })
+            });
+            const result = await response.json();
+            result.forEach(message => {
+                resultsArea.value += `${message}\n`;
+            });
+        } catch (error) {
+            resultsArea.value += `Error: ${error}\n`;
+        }
+        resultsArea.value += '\n';
+    }
+    function clearResults(){
+        const resultsArea = document.getElementById('results');
+        resultsArea.value = "";
+    }
+</script>
+
+</body>
+</html>
